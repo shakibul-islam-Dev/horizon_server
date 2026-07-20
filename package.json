@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx server.ts",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "cors": "^2.8.6",
