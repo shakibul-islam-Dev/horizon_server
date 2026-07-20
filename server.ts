@@ -99,8 +99,8 @@ app.use(async (_req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
-// Server Initialization (local development only)
-if (process.env.NODE_ENV !== "production") {
+// Server Initialization (local development & non-serverless production like Render)
+if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
   connectDB()
     .then(() => {
       app.listen(PORT, () => {
