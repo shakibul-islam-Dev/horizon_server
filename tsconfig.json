@@ -13,6 +13,13 @@
     "sourceMap": true,
     "moduleDetection": "force"
   },
-  "include": ["src/**/*.ts", "routes/**/*.ts", "controllers/**/*.ts", "models/**/*.ts", "helpers/**/*.ts", "server.ts", "api/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "routes/**/*.ts",
+    "controllers/**/*.ts",
+    "models/**/*.ts",
+    "helpers/**/*.ts",
+    "server.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }
