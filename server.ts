@@ -8,7 +8,7 @@ import routes from "./routes";
 import { getSession } from "./helpers/auth";
 
 const PORT = process.env.PORT || 5000;
-const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:3000";
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "https://horizon-client-eight.vercel.app";
 const NODE_ENV = process.env.NODE_ENV || "development";
 
 const app = express();

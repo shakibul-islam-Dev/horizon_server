@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://horizon-client-eight.vercel.app';
 
 export async function getSession(req: Request) {
   const cookie = req.headers['cookie'];
