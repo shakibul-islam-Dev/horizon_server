@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose';
 
 const messageSchema = new Schema({
   role: { type: String, enum: ['user', 'assistant', 'system'], required: true },
@@ -20,4 +19,5 @@ const conversationSchema = new Schema({
 
 conversationSchema.index({ user: 1, status: 1, updatedAt: -1 });
 
-module.exports = mongoose.model('Conversation', conversationSchema);
+export default mongoose.models.Conversation || mongoose.model('Conversation', conversationSchema);
+

@@ -1,7 +1,8 @@
-const User = require('../models/User');
-const { sendSuccess, sendError } = require('../helpers/response');
+import { Request, Response } from 'express';
+import User from '../models/User';
+import { sendSuccess, sendError } from '../helpers/response';
 
-exports.getAll = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getAll = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (user.role !== 'admin') return sendError(res, 403, 'Admin access required');
   const url = new URL(req.url, `http://${req.headers.host}`);
@@ -23,14 +24,14 @@ exports.getAll = async (req: any, res: any, params: any, body: any, user: any) =
   sendSuccess(res, 'Users fetched', users, { page, limit, total, totalPages: Math.ceil(total / limit) });
 };
 
-exports.getMe = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getMe = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const found = await User.findById(user.userId);
   if (!found) return sendError(res, 404, 'User not found');
   sendSuccess(res, 'Profile fetched', found);
 };
 
-exports.updateMe = async (req: any, res: any, params: any, body: any, user: any) => {
+export const updateMe = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!body) return sendError(res, 400, 'Invalid request body');
   const found = await User.findById(user.userId);
@@ -48,8 +49,9 @@ exports.updateMe = async (req: any, res: any, params: any, body: any, user: any)
   sendSuccess(res, 'Profile updated', found);
 };
 
-exports.getById = async (req: any, res: any, params: any) => {
+export const getById = async (req: Request, res: Response, params: any) => {
   const found = await User.findById(params.id).select('name image createdAt');
   if (!found) return sendError(res, 404, 'User not found');
   sendSuccess(res, 'User fetched', found);
 };
+

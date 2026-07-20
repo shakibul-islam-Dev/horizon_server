@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose';
 
 const transactionSchema = new Schema({
   buyer: { type: String, ref: 'User', required: true },
@@ -13,4 +12,5 @@ const transactionSchema = new Schema({
 transactionSchema.index({ buyer: 1, createdAt: -1 });
 transactionSchema.index({ seller: 1, createdAt: -1 });
 
-module.exports = mongoose.model('Transaction', transactionSchema);
+export default mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
+

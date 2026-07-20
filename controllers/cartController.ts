@@ -1,17 +1,18 @@
-const Cart = require('../models/Cart');
-const Wishlist = require('../models/Wishlist');
-const Item = require('../models/Item');
-const { sendSuccess, sendError, sendCreated } = require('../helpers/response');
+import { Request, Response } from 'express';
+import Cart from '../models/Cart';
+import Wishlist from '../models/Wishlist';
+import Item from '../models/Item';
+import { sendSuccess, sendError, sendCreated } from '../helpers/response';
 
 // ===== CART =====
-exports.getCart = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getCart = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   let cart = await Cart.findOne({ user: user.userId }).populate('items.item', 'title price images status');
   if (!cart) cart = await Cart.create({ user: user.userId, items: [] });
   sendSuccess(res, 'Cart fetched', cart);
 };
 
-exports.addToCart = async (req: any, res: any, params: any, body: any, user: any) => {
+export const addToCart = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const itemId = body.itemId || body.item;
   if (!itemId) return sendError(res, 400, 'Item ID is required');
@@ -31,7 +32,7 @@ exports.addToCart = async (req: any, res: any, params: any, body: any, user: any
   sendSuccess(res, 'Item added to cart', cart);
 };
 
-exports.updateCart = async (req: any, res: any, params: any, body: any, user: any) => {
+export const updateCart = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const itemId = body.itemId || body.item;
   if (!itemId || !body.quantity) return sendError(res, 400, 'Item ID and quantity required');
@@ -45,7 +46,7 @@ exports.updateCart = async (req: any, res: any, params: any, body: any, user: an
   sendSuccess(res, 'Cart updated', cart);
 };
 
-exports.removeFromCart = async (req: any, res: any, params: any, body: any, user: any) => {
+export const removeFromCart = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const cart = await Cart.findOne({ user: user.userId });
   if (!cart) return sendError(res, 404, 'Cart not found');
@@ -55,7 +56,7 @@ exports.removeFromCart = async (req: any, res: any, params: any, body: any, user
   sendSuccess(res, 'Item removed from cart', cart);
 };
 
-exports.clearCart = async (req: any, res: any, params: any, body: any, user: any) => {
+export const clearCart = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const cart = await Cart.findOne({ user: user.userId });
   if (!cart) return sendError(res, 404, 'Cart not found');
@@ -64,7 +65,7 @@ exports.clearCart = async (req: any, res: any, params: any, body: any, user: any
   sendSuccess(res, 'Cart cleared', cart);
 };
 
-exports.getCartTotal = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getCartTotal = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const cart = await Cart.findOne({ user: user.userId }).populate('items.item', 'price');
   if (!cart) return sendSuccess(res, 'Cart total', { total: 0 });
@@ -73,13 +74,13 @@ exports.getCartTotal = async (req: any, res: any, params: any, body: any, user: 
 };
 
 // ===== WISHLIST =====
-exports.getWishlist = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getWishlist = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const items = await Wishlist.find({ user: user.userId }).populate({ path: 'item', populate: [{ path: 'author', select: 'name image' }] }).sort({ createdAt: -1 }).lean();
   sendSuccess(res, 'Wishlist fetched', items);
 };
 
-exports.addToWishlist = async (req: any, res: any, params: any, body: any, user: any) => {
+export const addToWishlist = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const itemId = body.itemId || body.item;
   if (!itemId) return sendError(res, 400, 'Item ID is required');
@@ -91,20 +92,20 @@ exports.addToWishlist = async (req: any, res: any, params: any, body: any, user:
   sendCreated(res, 'Added to wishlist', wl);
 };
 
-exports.removeFromWishlist = async (req: any, res: any, params: any, body: any, user: any) => {
+export const removeFromWishlist = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const wl = await Wishlist.findOneAndDelete({ user: user.userId, item: params.itemId });
   if (!wl) return sendError(res, 404, 'Item not in wishlist');
   sendSuccess(res, 'Removed from wishlist');
 };
 
-exports.checkWishlist = async (req: any, res: any, params: any, body: any, user: any) => {
+export const checkWishlist = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const exists = await Wishlist.findOne({ user: user.userId, item: params.itemId });
   sendSuccess(res, 'Check result', { inWishlist: !!exists });
 };
 
-exports.clearWishlist = async (req: any, res: any, params: any, body: any, user: any) => {
+export const clearWishlist = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   await Wishlist.deleteMany({ user: user.userId });
   sendSuccess(res, 'Wishlist cleared');

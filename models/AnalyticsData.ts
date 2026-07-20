@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose';
 
 const analyticsDataSchema = new Schema({
   user: { type: String, ref: 'User', required: true },
@@ -17,4 +16,5 @@ const analyticsDataSchema = new Schema({
 
 analyticsDataSchema.index({ user: 1, createdAt: -1 });
 
-module.exports = mongoose.model('AnalyticsData', analyticsDataSchema);
+export default mongoose.models.AnalyticsData || mongoose.model('AnalyticsData', analyticsDataSchema);
+

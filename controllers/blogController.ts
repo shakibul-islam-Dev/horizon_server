@@ -1,10 +1,11 @@
-const BlogPost = require('../models/BlogPost');
-const Comment = require('../models/Comment');
-const Item = require('../models/Item');
-const { sendSuccess, sendError, sendCreated } = require('../helpers/response');
+import { Request, Response } from 'express';
+import BlogPost from '../models/BlogPost';
+import Comment from '../models/Comment';
+import Item from '../models/Item';
+import { sendSuccess, sendError, sendCreated } from '../helpers/response';
 
 // ===== BLOG POSTS =====
-exports.getBlogPosts = async (req: any, res: any) => {
+export const getBlogPosts = async (req: Request, res: Response) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const search = url.searchParams.get('search');
   const category = url.searchParams.get('category');
@@ -22,7 +23,7 @@ exports.getBlogPosts = async (req: any, res: any) => {
   sendSuccess(res, 'Blog posts fetched', posts);
 };
 
-exports.getMyPosts = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getMyPosts = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const url = new URL(req.url, `http://${req.headers.host}`);
   const status = url.searchParams.get('status');
@@ -32,7 +33,7 @@ exports.getMyPosts = async (req: any, res: any, params: any, body: any, user: an
   sendSuccess(res, 'My posts fetched', posts);
 };
 
-exports.createBlogPost = async (req: any, res: any, params: any, body: any, user: any) => {
+export const createBlogPost = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!body || !body.title || !body.content) return sendError(res, 400, 'Title and content are required');
   const post = await BlogPost.create({ ...body, author: user.userId });
@@ -40,7 +41,7 @@ exports.createBlogPost = async (req: any, res: any, params: any, body: any, user
   sendCreated(res, 'Blog post created', post);
 };
 
-exports.getBlogPostById = async (req: any, res: any, params: any) => {
+export const getBlogPostById = async (req: Request, res: Response, params: any) => {
   const post = await BlogPost.findById(params.id).populate('author', 'name image');
   if (!post) return sendError(res, 404, 'Blog post not found');
   post.meta.views += 1;
@@ -48,7 +49,7 @@ exports.getBlogPostById = async (req: any, res: any, params: any) => {
   sendSuccess(res, 'Blog post fetched', post);
 };
 
-exports.updateBlogPost = async (req: any, res: any, params: any, body: any, user: any) => {
+export const updateBlogPost = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const post = await BlogPost.findById(params.id);
   if (!post) return sendError(res, 404, 'Blog post not found');
@@ -62,7 +63,7 @@ exports.updateBlogPost = async (req: any, res: any, params: any, body: any, user
   sendSuccess(res, 'Blog post updated', post);
 };
 
-exports.deleteBlogPost = async (req: any, res: any, params: any, body: any, user: any) => {
+export const deleteBlogPost = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const post = await BlogPost.findById(params.id);
   if (!post) return sendError(res, 404, 'Blog post not found');
@@ -71,7 +72,7 @@ exports.deleteBlogPost = async (req: any, res: any, params: any, body: any, user
   sendSuccess(res, 'Blog post deleted');
 };
 
-exports.getBlogPostBySlug = async (req: any, res: any, params: any) => {
+export const getBlogPostBySlug = async (req: Request, res: Response, params: any) => {
   const post = await BlogPost.findOne({ slug: params.slug }).populate('author', 'name image');
   if (!post) return sendError(res, 404, 'Blog post not found');
   post.meta.views += 1;
@@ -79,7 +80,7 @@ exports.getBlogPostBySlug = async (req: any, res: any, params: any) => {
   sendSuccess(res, 'Blog post fetched', post);
 };
 
-exports.likeBlogPost = async (req: any, res: any, params: any, body: any, user: any) => {
+export const likeBlogPost = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const post = await BlogPost.findById(params.id);
   if (!post) return sendError(res, 404, 'Blog post not found');
@@ -107,17 +108,17 @@ async function getCommentsWithReplies(filter: any) {
   return withReplies;
 }
 
-exports.getCommentsByItem = async (req: any, res: any, params: any) => {
+export const getCommentsByItem = async (req: Request, res: Response, params: any) => {
   const comments = await getCommentsWithReplies({ item: params.itemId, parentComment: null });
   sendSuccess(res, 'Comments fetched', comments);
 };
 
-exports.getCommentsByBlog = async (req: any, res: any, params: any) => {
+export const getCommentsByBlog = async (req: Request, res: Response, params: any) => {
   const comments = await getCommentsWithReplies({ blogPost: params.blogPostId, parentComment: null });
   sendSuccess(res, 'Comments fetched', comments);
 };
 
-exports.createComment = async (req: any, res: any, params: any, body: any, user: any) => {
+export const createComment = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!body || !body.content) return sendError(res, 400, 'Content is required');
   if (body.item) { const item = await Item.findById(body.item); if (!item) return sendError(res, 404, 'Item not found'); }
@@ -128,7 +129,7 @@ exports.createComment = async (req: any, res: any, params: any, body: any, user:
   sendCreated(res, 'Comment created', comment);
 };
 
-exports.updateComment = async (req: any, res: any, params: any, body: any, user: any) => {
+export const updateComment = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const comment = await Comment.findById(params.id);
   if (!comment) return sendError(res, 404, 'Comment not found');
@@ -140,7 +141,7 @@ exports.updateComment = async (req: any, res: any, params: any, body: any, user:
   sendSuccess(res, 'Comment updated', comment);
 };
 
-exports.deleteComment = async (req: any, res: any, params: any, body: any, user: any) => {
+export const deleteComment = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const comment = await Comment.findById(params.id);
   if (!comment) return sendError(res, 404, 'Comment not found');
@@ -150,7 +151,7 @@ exports.deleteComment = async (req: any, res: any, params: any, body: any, user:
   sendSuccess(res, 'Comment deleted');
 };
 
-exports.toggleCommentLike = async (req: any, res: any, params: any, body: any, user: any) => {
+export const toggleCommentLike = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const comment = await Comment.findById(params.id);
   if (!comment) return sendError(res, 404, 'Comment not found');

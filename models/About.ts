@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose';
 
 const aboutSchema = new Schema({
   title: { type: String, default: 'Horizon' },
@@ -71,4 +70,5 @@ const aboutSchema = new Schema({
   helpFaq: [{ question: { type: String }, answer: { type: String } }],
 }, { timestamps: true, collection: 'abouts' });
 
-module.exports = mongoose.model('About', aboutSchema);
+export default mongoose.models.About || mongoose.model('About', aboutSchema);
+

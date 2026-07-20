@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose';
 
 const blogPostSchema = new Schema({
   title: { type: String, required: true, trim: true },
@@ -24,4 +23,5 @@ blogPostSchema.index({ title: 'text', content: 'text', tags: 'text' });
 blogPostSchema.index({ author: 1 });
 blogPostSchema.index({ createdAt: -1 });
 
-module.exports = mongoose.model('BlogPost', blogPostSchema);
+export default mongoose.models.BlogPost || mongoose.model('BlogPost', blogPostSchema);
+

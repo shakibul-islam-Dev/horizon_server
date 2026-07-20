@@ -1,9 +1,9 @@
-const { Router } = require('express');
-const controller = require('../controllers/aboutController');
+import { Router, Request, Response, NextFunction } from 'express';
+import * as controller from '../controllers/aboutController';
 
-function wrap(fn: any) {
-  return (req: any, res: any, next: any) => {
-    Promise.resolve(fn(req, res, req.params, req.body, req.currentUser)).catch(next);
+function wrap(fn: (req: Request, res: Response, params: any, body: any, user: any) => Promise<any> | any) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, req.params, req.body, (req as any).currentUser)).catch(next);
   };
 }
 
@@ -12,4 +12,5 @@ const router = Router();
 router.get('/abouts', wrap(controller.get));
 router.put('/abouts', wrap(controller.update));
 
-module.exports = router;
+export default router;
+

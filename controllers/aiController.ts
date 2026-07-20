@@ -1,9 +1,10 @@
-const OpenAI = require('openai');
-const Item = require('../models/Item');
-const Conversation = require('../models/Conversation');
-const Recommendation = require('../models/Recommendation');
-const AnalyticsData = require('../models/AnalyticsData');
-const { sendSuccess, sendError, sendCreated } = require('../helpers/response');
+import { Request, Response } from 'express';
+import OpenAI from 'openai';
+import Item from '../models/Item';
+import Conversation from '../models/Conversation';
+import Recommendation from '../models/Recommendation';
+import AnalyticsData from '../models/AnalyticsData';
+import { sendSuccess, sendError, sendCreated } from '../helpers/response';
 
 const groq = process.env.GROQ_API_KEY ? new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: 'https://api.groq.com/openai/v1' }) : null;
 
@@ -12,7 +13,7 @@ async function chatGroq(messages: any, options: any = {}) {
   const conversationMsgs = messages.filter((m: any) => m.role !== 'system');
   const apiMsgs = conversationMsgs.map((m: any) => ({ role: m.role, content: m.content }));
   if (systemMsg) apiMsgs.unshift({ role: 'system', content: systemMsg.content });
-  const result = await groq.chat.completions.create({
+  const result = await groq!.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     messages: apiMsgs,
     max_tokens: options.maxTokens ?? 500,
@@ -27,7 +28,7 @@ async function llmChat(messages: any, options: any = {}) {
 }
 
 // ===== CONTENT GENERATION =====
-exports.generateContent = async (req: any, res: any, params: any, body: any, user: any) => {
+export const generateContent = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!groq) return sendError(res, 500, 'AI not configured');
   if (!body || !body.type || !body.topic || !body.length) return sendError(res, 400, 'type, topic, and length are required');
@@ -54,7 +55,7 @@ Context: ${body.additionalContext || 'No additional context.'}`;
   sendSuccess(res, 'Content generated', { content, type: body.type, topic: body.topic, tone: body.tone || 'professional' });
 };
 
-exports.regenerateContent = async (req: any, res: any, params: any, body: any, user: any) => {
+export const regenerateContent = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!groq) return sendError(res, 500, 'AI not configured');
   if (!body || !body.type || !body.topic || !body.length) return sendError(res, 400, 'type, topic, and length are required');
@@ -85,7 +86,7 @@ Context: ${body.additionalContext || ''} ${prevContext}`;
   sendSuccess(res, 'Content regenerated', { content, type: body.type, topic: body.topic, tone: body.tone || 'professional' });
 };
 
-exports.classify = async (req: any, res: any, params: any, body: any, user: any) => {
+export const classify = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!groq) return sendError(res, 500, 'AI not configured');
   if (!body || !body.title || !body.description) return sendError(res, 400, 'Title and description are required');
@@ -106,7 +107,7 @@ exports.classify = async (req: any, res: any, params: any, body: any, user: any)
 };
 
 // ===== RECOMMENDATIONS =====
-exports.getRecommendations = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getRecommendations = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!groq) return sendError(res, 500, 'AI not configured');
 
@@ -145,7 +146,7 @@ exports.getRecommendations = async (req: any, res: any, params: any, body: any, 
   sendSuccess(res, 'Recommendations generated', sorted, { reason: `Based on your interest in ${viewed.join(', ') || 'browsing history'}.`, userProfile: { preferredCategories: viewed, avgPrice } });
 };
 
-exports.trackInteraction = async (req: any, res: any, params: any, body: any, user: any) => {
+export const trackInteraction = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!body || !body.itemId || !body.interactionType) return sendError(res, 400, 'itemId and interactionType required');
   const result = await Recommendation.findOneAndUpdate(
@@ -157,7 +158,7 @@ exports.trackInteraction = async (req: any, res: any, params: any, body: any, us
 };
 
 // ===== DATA ANALYSIS =====
-exports.analyzeData = async (req: any, res: any, params: any, body: any, user: any) => {
+export const analyzeData = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!groq) return sendError(res, 500, 'AI not configured');
 
@@ -192,13 +193,13 @@ exports.analyzeData = async (req: any, res: any, params: any, body: any, user: a
   sendCreated(res, 'Analysis created', record);
 };
 
-exports.getAnalyses = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getAnalyses = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const analyses = await AnalyticsData.find({ user: user.userId }).sort({ createdAt: -1 }).lean();
   sendSuccess(res, 'Analyses fetched', analyses);
 };
 
-exports.getAnalysisSummary = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getAnalysisSummary = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!groq) return sendError(res, 500, 'AI not configured');
   const analyses = await AnalyticsData.find({ user: user.userId }).sort({ createdAt: -1 }).limit(10).lean();
@@ -210,7 +211,7 @@ exports.getAnalysisSummary = async (req: any, res: any, params: any, body: any, 
   sendSuccess(res, 'Summary generated', { summary: summaryText, totalAnalyses: analyses.length, recentAnalyses: analyses.map((a: any) => ({ fileName: a.fileName, createdAt: a.createdAt, summary: a.analysis?.summary })) });
 };
 
-exports.getAnalysisById = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getAnalysisById = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const record = await AnalyticsData.findOne({ _id: params.id, user: user.userId });
   if (!record) return sendError(res, 404, 'Analysis not found');
@@ -218,7 +219,7 @@ exports.getAnalysisById = async (req: any, res: any, params: any, body: any, use
 };
 
 // ===== CHAT =====
-exports.chat = async (req: any, res: any, params: any, body: any, user: any) => {
+export const chat = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!groq) return sendError(res, 500, 'AI not configured');
   if (!body || !body.messages) return sendError(res, 400, 'Messages array is required');
@@ -265,7 +266,7 @@ exports.chat = async (req: any, res: any, params: any, body: any, user: any) => 
   sendSuccess(res, 'Chat response', { reply, conversationId, title: updated.title });
 };
 
-exports.getConversations = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getConversations = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const url = new URL(req.url, `http://${req.headers.host}`);
   const status = url.searchParams.get('status') || 'active';
@@ -277,14 +278,14 @@ exports.getConversations = async (req: any, res: any, params: any, body: any, us
   sendSuccess(res, 'Conversations fetched', conversations);
 };
 
-exports.getConversationById = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getConversationById = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const conversation = await Conversation.findOne({ _id: params.id, user: user.userId }).lean();
   if (!conversation) return sendError(res, 404, 'Conversation not found');
   sendSuccess(res, 'Conversation fetched', conversation);
 };
 
-exports.renameConversation = async (req: any, res: any, params: any, body: any, user: any) => {
+export const renameConversation = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!body || !body.title) return sendError(res, 400, 'Title is required');
   const conversation = await Conversation.findOneAndUpdate({ _id: params.id, user: user.userId }, { title: body.title }, { new: true });
@@ -292,7 +293,7 @@ exports.renameConversation = async (req: any, res: any, params: any, body: any, 
   sendSuccess(res, 'Conversation renamed', conversation);
 };
 
-exports.updateConversationStatus = async (req: any, res: any, params: any, body: any, user: any) => {
+export const updateConversationStatus = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!body || !body.status) return sendError(res, 400, 'Status is required');
   const conversation = await Conversation.findOneAndUpdate({ _id: params.id, user: user.userId }, { status: body.status }, { new: true });
@@ -300,14 +301,14 @@ exports.updateConversationStatus = async (req: any, res: any, params: any, body:
   sendSuccess(res, 'Status updated', conversation);
 };
 
-exports.deleteConversation = async (req: any, res: any, params: any, body: any, user: any) => {
+export const deleteConversation = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const conversation = await Conversation.findOneAndDelete({ _id: params.id, user: user.userId });
   if (!conversation) return sendError(res, 404, 'Conversation not found');
   sendSuccess(res, 'Conversation deleted');
 };
 
-exports.deleteAllConversations = async (req: any, res: any, params: any, body: any, user: any) => {
+export const deleteAllConversations = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const result = await Conversation.deleteMany({ user: user.userId });
   sendSuccess(res, 'Conversations deleted', { deleted: result.deletedCount });

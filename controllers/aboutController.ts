@@ -1,5 +1,6 @@
-const About = require('../models/About');
-const { sendSuccess, sendError, sendCreated } = require('../helpers/response');
+import { Request, Response } from 'express';
+import About from '../models/About';
+import { sendSuccess, sendError, sendCreated } from '../helpers/response';
 
 const DEFAULT_ABOUT = {
   title: 'Horizon Marketplace',
@@ -79,12 +80,12 @@ async function getOrCreateAbout() {
   return about;
 }
 
-exports.get = async (req: any, res: any) => {
+export const get = async (req: Request, res: Response) => {
   const about = await getOrCreateAbout();
   sendSuccess(res, 'About fetched', about);
 };
 
-exports.update = async (req: any, res: any, params: any, body: any, user: any) => {
+export const update = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user || user.role !== 'admin') return sendError(res, 403, 'Not authorized');
   if (!body) return sendError(res, 400, 'Invalid request body');
   let about = await About.findOne();

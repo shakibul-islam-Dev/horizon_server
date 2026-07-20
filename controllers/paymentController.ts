@@ -1,17 +1,18 @@
-const Stripe = require('stripe');
-const Payment = require('../models/Payment');
-const Transaction = require('../models/Transaction');
-const Item = require('../models/Item');
-const { sendSuccess, sendError, sendCreated } = require('../helpers/response');
+import { Request, Response } from 'express';
+import Stripe from 'stripe';
+import Payment from '../models/Payment';
+import Transaction from '../models/Transaction';
+import Item from '../models/Item';
+import { sendSuccess, sendError, sendCreated } from '../helpers/response';
 
-const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' }) : null;
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' as any }) : null;
 
 // ===== PAYMENTS =====
-exports.getConfig = async (req: any, res: any) => {
+export const getConfig = async (req: Request, res: Response) => {
   sendSuccess(res, 'Stripe config', { publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '' });
 };
 
-exports.createPaymentIntent = async (req: any, res: any, params: any, body: any, user: any) => {
+export const createPaymentIntent = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!stripe) return sendError(res, 500, 'Stripe not configured');
   if (!body || !body.itemId) return sendError(res, 400, 'Item ID is required');
@@ -35,13 +36,13 @@ exports.createPaymentIntent = async (req: any, res: any, params: any, body: any,
   });
 };
 
-exports.getMyPayments = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getMyPayments = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const payments = await Payment.find({ user: user.userId }).populate('item', 'title price images').sort({ createdAt: -1 }).lean();
   sendSuccess(res, 'Payments fetched', payments);
 };
 
-exports.getPaymentById = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getPaymentById = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const payment = await Payment.findById(params.id).populate('item', 'title price images');
   if (!payment) return sendError(res, 404, 'Payment not found');
@@ -49,13 +50,13 @@ exports.getPaymentById = async (req: any, res: any, params: any, body: any, user
   sendSuccess(res, 'Payment fetched', payment);
 };
 
-exports.getPaymentsByItem = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getPaymentsByItem = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const payments = await Payment.find({ item: params.itemId }).populate('user', 'name image').sort({ createdAt: -1 }).lean();
   sendSuccess(res, 'Payments fetched', payments);
 };
 
-exports.createPayment = async (req: any, res: any, params: any, body: any, user: any) => {
+export const createPayment = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!body || !body.item || !body.amount || !body.paymentMethod) return sendError(res, 400, 'Missing required fields');
   if (!body.stripePaymentId) return sendError(res, 400, 'Stripe payment ID is required');
@@ -74,7 +75,7 @@ exports.createPayment = async (req: any, res: any, params: any, body: any, user:
   sendCreated(res, 'Payment created', payment);
 };
 
-exports.updatePaymentStatus = async (req: any, res: any, params: any, body: any, user: any) => {
+export const updatePaymentStatus = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const payment = await Payment.findById(params.id);
   if (!payment) return sendError(res, 404, 'Payment not found');
@@ -90,13 +91,13 @@ exports.updatePaymentStatus = async (req: any, res: any, params: any, body: any,
   sendSuccess(res, 'Payment status updated', payment);
 };
 
-exports.webhook = async (req: any, res: any) => {
+export const webhook = async (req: Request, res: Response) => {
   if (!stripe) return sendError(res, 500, 'Stripe not configured');
   const signature = req.headers['stripe-signature'];
   if (!signature) return sendError(res, 400, 'Missing stripe-signature header');
 
   try {
-    const event = stripe.webhooks.constructEvent(req.rawBody, signature, process.env.STRIPE_WEBHOOK_SECRET);
+    const event = stripe.webhooks.constructEvent(req.rawBody!, signature, process.env.STRIPE_WEBHOOK_SECRET!);
     switch (event.type) {
       case 'payment_intent.succeeded': {
         const pi = event.data.object;
@@ -121,19 +122,19 @@ exports.webhook = async (req: any, res: any) => {
 };
 
 // ===== TRANSACTIONS =====
-exports.getBuyerTransactions = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getBuyerTransactions = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const transactions = await Transaction.find({ buyer: user.userId }).populate('seller', 'name image').populate('item', 'title price images').populate('payment', 'status paymentMethod').sort({ createdAt: -1 }).lean();
   sendSuccess(res, 'Transactions fetched', transactions);
 };
 
-exports.getSellerTransactions = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getSellerTransactions = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const transactions = await Transaction.find({ seller: user.userId }).populate('buyer', 'name image').populate('item', 'title price images').populate('payment', 'status paymentMethod').sort({ createdAt: -1 }).lean();
   sendSuccess(res, 'Transactions fetched', transactions);
 };
 
-exports.getTransactionById = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getTransactionById = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const t = await Transaction.findById(params.id);
   if (!t) return sendError(res, 404, 'Transaction not found');
@@ -142,7 +143,7 @@ exports.getTransactionById = async (req: any, res: any, params: any, body: any, 
   sendSuccess(res, 'Transaction fetched', t);
 };
 
-exports.createTransaction = async (req: any, res: any, params: any, body: any, user: any) => {
+export const createTransaction = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!body || !body.item || !body.payment || !body.amount) return sendError(res, 400, 'Missing required fields');
   const item = await Item.findById(body.item);
@@ -156,7 +157,7 @@ exports.createTransaction = async (req: any, res: any, params: any, body: any, u
   sendCreated(res, 'Transaction created', t);
 };
 
-exports.updateTransactionStatus = async (req: any, res: any, params: any, body: any, user: any) => {
+export const updateTransactionStatus = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!body || !body.status) return sendError(res, 400, 'Status is required');
   const t = await Transaction.findById(params.id);

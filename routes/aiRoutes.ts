@@ -1,12 +1,12 @@
-const { Router } = require('express');
-const multer = require('multer');
-const controller = require('../controllers/aiController');
+import { Router, Request, Response, NextFunction } from 'express';
+import multer from 'multer';
+import * as controller from '../controllers/aiController';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
-function wrap(fn: any) {
-  return (req: any, res: any, next: any) => {
-    Promise.resolve(fn(req, res, req.params, req.body, req.currentUser)).catch(next);
+function wrap(fn: (req: Request, res: Response, params: any, body: any, user: any) => Promise<any> | any) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, req.params, req.body, (req as any).currentUser)).catch(next);
   };
 }
 
@@ -32,4 +32,5 @@ router.patch('/ai/conversations/:id/status', wrap(controller.updateConversationS
 router.delete('/ai/conversations/:id', wrap(controller.deleteConversation));
 router.delete('/ai/conversations', wrap(controller.deleteAllConversations));
 
-module.exports = router;
+export default router;
+

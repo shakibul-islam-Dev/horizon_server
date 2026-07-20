@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose';
 
 const wishlistSchema = new Schema({
   user: { type: String, ref: 'User', required: true },
@@ -9,4 +8,5 @@ const wishlistSchema = new Schema({
 wishlistSchema.index({ user: 1, item: 1 }, { unique: true });
 wishlistSchema.index({ user: 1, createdAt: -1 });
 
-module.exports = mongoose.model('Wishlist', wishlistSchema);
+export default mongoose.models.Wishlist || mongoose.model('Wishlist', wishlistSchema);
+

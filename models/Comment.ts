@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose';
 
 const commentSchema = new Schema({
   user: { type: String, ref: 'User', required: true },
@@ -14,4 +13,5 @@ commentSchema.index({ item: 1, createdAt: -1 });
 commentSchema.index({ blogPost: 1, createdAt: -1 });
 commentSchema.index({ parentComment: 1 });
 
-module.exports = mongoose.model('Comment', commentSchema);
+export default mongoose.models.Comment || mongoose.model('Comment', commentSchema);
+

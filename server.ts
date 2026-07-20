@@ -1,9 +1,11 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-const routes = require('./routes');
-const { getSession } = require('./helpers/auth');
+import dotenv from "dotenv";
+dotenv.config();
+
+import express, { Request, Response, NextFunction } from "express";
+import cors from "cors";
+import mongoose from "mongoose";
+import routes from "./routes";
+import { getSession } from "./helpers/auth";
 
 const PORT = process.env.PORT || 5000;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:3000";
@@ -29,24 +31,24 @@ app.use(
   express.json({
     limit: "10mb",
     verify: (req: any, _res: any, buf: Buffer) => {
-      req.rawBody = buf.toString();
+      req.rawBody = buf;
     },
   }),
 );
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Auth Session Middleware
-app.use(async (req: any, _res: any, next: any) => {
+app.use(async (req: Request, _res: Response, next: NextFunction) => {
   try {
-    req.currentUser = await getSession(req);
+    req.currentUser = await getSession(req) as any;
   } catch (error) {
-    req.currentUser = null;
+    req.currentUser = undefined;
   }
   next();
 });
 
 // Root Route (ওয়েব পেজে দেখার জন্য)
-app.get("/", (_req: any, res: any) => {
+app.get("/", (_req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: "Server is running successfully!",
@@ -59,7 +61,7 @@ app.get("/", (_req: any, res: any) => {
 app.use("/api", routes);
 
 // 404 Route Handler
-app.use((req: any, res: any) => {
+app.use((req: Request, res: Response) => {
   res.status(404).json({
     success: false,
     message: `Route ${req.method} ${req.originalUrl} not found`,
@@ -67,7 +69,7 @@ app.use((req: any, res: any) => {
 });
 
 // Global Error Handler
-app.use((err: Error, _req: any, res: any, _next: any) => {
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error("Unhandled error:", err);
   res.status(500).json({
     success: false,
@@ -88,7 +90,7 @@ async function connectDB() {
 }
 
 // Ensure DB connection before handling requests (works for both local and serverless).
-app.use(async (_req: any, _res: any, next: any) => {
+app.use(async (_req: Request, _res: Response, next: NextFunction) => {
   try {
     await connectDB();
   } catch (err) {
@@ -120,8 +122,13 @@ if (process.env.NODE_ENV !== "production") {
   process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
-process.on("unhandledRejection", (err) => console.error("Unhandled Rejection:", err));
-process.on("uncaughtException", (err) => console.error("Uncaught Exception:", err));
+process.on("unhandledRejection", (err) =>
+  console.error("Unhandled Rejection:", err),
+);
+process.on("uncaughtException", (err) =>
+  console.error("Uncaught Exception:", err),
+);
 
 // Export the app for serverless platforms (Vercel / @vercel/node)
 export default app;
+

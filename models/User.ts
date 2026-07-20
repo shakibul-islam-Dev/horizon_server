@@ -1,7 +1,19 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema, Document } from 'mongoose';
 
-const userSchema = new Schema({
+export interface IUser extends Omit<Document, '_id'> {
+  _id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image: string;
+  role: 'user' | 'admin';
+  preferences: {
+    categories: mongoose.Types.ObjectId[];
+    priceRange: { min: number; max: number };
+  };
+}
+
+const userSchema = new Schema<IUser>({
   _id: { type: String, required: true },
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
@@ -14,4 +26,5 @@ const userSchema = new Schema({
   },
 }, { timestamps: true, collection: 'users', _id: false });
 
-module.exports = mongoose.model('User', userSchema);
+export default mongoose.models.User || mongoose.model<IUser>('User', userSchema);
+

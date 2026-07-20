@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose';
 
 const cartSchema = new Schema({
   user: { type: String, ref: 'User', required: true, unique: true },
@@ -9,4 +8,5 @@ const cartSchema = new Schema({
   }],
 }, { timestamps: true });
 
-module.exports = mongoose.model('Cart', cartSchema);
+export default mongoose.models.Cart || mongoose.model('Cart', cartSchema);
+

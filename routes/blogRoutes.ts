@@ -1,9 +1,9 @@
-const { Router } = require('express');
-const controller = require('../controllers/blogController');
+import { Router, Request, Response, NextFunction } from 'express';
+import * as controller from '../controllers/blogController';
 
-function wrap(fn: any) {
-  return (req: any, res: any, next: any) => {
-    Promise.resolve(fn(req, res, req.params, req.body, req.currentUser)).catch(next);
+function wrap(fn: (req: Request, res: Response, params: any, body: any, user: any) => Promise<any> | any) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, req.params, req.body, (req as any).currentUser)).catch(next);
   };
 }
 
@@ -25,4 +25,5 @@ router.put('/comments/:id', wrap(controller.updateComment));
 router.delete('/comments/:id', wrap(controller.deleteComment));
 router.post('/comments/:id/like', wrap(controller.toggleCommentLike));
 
-module.exports = router;
+export default router;
+

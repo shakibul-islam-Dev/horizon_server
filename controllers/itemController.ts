@@ -1,8 +1,10 @@
-const Item = require('../models/Item');
-const Review = require('../models/Review');
-const { sendSuccess, sendError, sendCreated } = require('../helpers/response');
+import { Request, Response } from 'express';
+import mongoose from 'mongoose';
+import Item from '../models/Item';
+import Review from '../models/Review';
+import { sendSuccess, sendError, sendCreated } from '../helpers/response';
 
-exports.getItems = async (req: any, res: any) => {
+export const getItems = async (req: Request, res: Response) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const search = url.searchParams.get('search');
   const category = url.searchParams.get('category');
@@ -27,7 +29,7 @@ exports.getItems = async (req: any, res: any) => {
   sendSuccess(res, 'Items fetched', items);
 };
 
-exports.getMyItems = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getMyItems = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const url = new URL(req.url, `http://${req.headers.host}`);
   const status = url.searchParams.get('status');
@@ -37,7 +39,7 @@ exports.getMyItems = async (req: any, res: any, params: any, body: any, user: an
   sendSuccess(res, 'My items fetched', items);
 };
 
-exports.getTags = async (req: any, res: any) => {
+export const getTags = async (req: Request, res: Response) => {
   const result = await Item.aggregate([
     { $match: { status: 'active', tags: { $exists: true, $not: { $size: 0 } } } },
     { $unwind: '$tags' },
@@ -48,7 +50,7 @@ exports.getTags = async (req: any, res: any) => {
   sendSuccess(res, 'Tags fetched', result.map((r: any) => r._id));
 };
 
-exports.createItem = async (req: any, res: any, params: any, body: any, user: any) => {
+export const createItem = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!body || !body.title || !body.shortDescription || !body.fullDescription || !body.price || !body.category) {
     return sendError(res, 400, 'Missing required fields');
@@ -57,7 +59,7 @@ exports.createItem = async (req: any, res: any, params: any, body: any, user: an
   sendCreated(res, 'Item created', item);
 };
 
-exports.getItemById = async (req: any, res: any, params: any) => {
+export const getItemById = async (req: Request, res: Response, params: any) => {
   const item = await Item.findById(params.id);
   if (!item) return sendError(res, 404, 'Item not found');
   item.meta.views += 1;
@@ -65,7 +67,7 @@ exports.getItemById = async (req: any, res: any, params: any) => {
   sendSuccess(res, 'Item fetched', item);
 };
 
-exports.updateItem = async (req: any, res: any, params: any, body: any, user: any) => {
+export const updateItem = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   if (!body) return sendError(res, 400, 'Invalid request body');
   const item = await Item.findById(params.id);
@@ -79,7 +81,7 @@ exports.updateItem = async (req: any, res: any, params: any, body: any, user: an
   sendSuccess(res, 'Item updated', item);
 };
 
-exports.deleteItem = async (req: any, res: any, params: any, body: any, user: any) => {
+export const deleteItem = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const item = await Item.findById(params.id);
   if (!item) return sendError(res, 404, 'Item not found');
@@ -88,30 +90,30 @@ exports.deleteItem = async (req: any, res: any, params: any, body: any, user: an
   sendSuccess(res, 'Item deleted');
 };
 
-exports.getReviews = async (req: any, res: any) => {
+export const getReviews = async (req: Request, res: Response) => {
   const reviews = await Review.find().populate('user', 'name image').sort({ createdAt: -1 }).lean();
   sendSuccess(res, 'Reviews fetched', reviews);
 };
 
-exports.getReviewsByItem = async (req: any, res: any, params: any) => {
+export const getReviewsByItem = async (req: Request, res: Response, params: any) => {
   const reviews = await Review.find({ item: params.itemId }).populate('user', 'name image').sort({ createdAt: -1 }).lean();
   sendSuccess(res, 'Reviews fetched', reviews);
 };
 
-exports.getMyReviews = async (req: any, res: any, params: any, body: any, user: any) => {
+export const getMyReviews = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const reviews = await Review.find({ user: user.userId }).sort({ createdAt: -1 }).lean();
   sendSuccess(res, 'Reviews fetched', reviews);
 };
 
-exports.getReviewsByUser = async (req: any, res: any, params: any) => {
+export const getReviewsByUser = async (req: Request, res: Response, params: any) => {
   const reviews = await Review.find({ user: params.userId }).sort({ createdAt: -1 }).lean();
   sendSuccess(res, 'Reviews fetched', reviews);
 };
 
-exports.getReviewStats = async (req: any, res: any, params: any) => {
+export const getReviewStats = async (req: Request, res: Response, params: any) => {
   const result = await Review.aggregate([
-    { $match: { item: require('mongoose').Types.ObjectId.createFromHexString(params.itemId) } },
+    { $match: { item: mongoose.Types.ObjectId.createFromHexString(params.itemId) } },
     { $group: { _id: '$item', averageRating: { $avg: '$rating' }, reviewCount: { $sum: 1 }, ratingDistribution: { $push: '$rating' } } },
   ]);
   if (result.length === 0) {
@@ -123,7 +125,7 @@ exports.getReviewStats = async (req: any, res: any, params: any) => {
   sendSuccess(res, 'Review stats', { averageRating: Math.round(averageRating * 10) / 10, reviewCount, totalReviews: reviewCount, distribution });
 };
 
-exports.createReview = async (req: any, res: any, params: any, body: any, user: any) => {
+export const createReview = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const itemId = body.itemId || body.item;
   if (!itemId || !body.rating) return sendError(res, 400, 'Item ID and rating are required');
@@ -138,7 +140,7 @@ exports.createReview = async (req: any, res: any, params: any, body: any, user: 
   sendCreated(res, 'Review created', review);
 };
 
-exports.updateReview = async (req: any, res: any, params: any, body: any, user: any) => {
+export const updateReview = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const review = await Review.findById(params.id);
   if (!review) return sendError(res, 404, 'Review not found');
@@ -153,7 +155,7 @@ exports.updateReview = async (req: any, res: any, params: any, body: any, user: 
   sendSuccess(res, 'Review updated', review);
 };
 
-exports.deleteReview = async (req: any, res: any, params: any, body: any, user: any) => {
+export const deleteReview = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user) return sendError(res, 401, 'Not authenticated');
   const review = await Review.findById(params.id);
   if (!review) return sendError(res, 404, 'Review not found');

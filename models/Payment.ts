@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose';
 
 const paymentSchema = new Schema({
   user: { type: String, ref: 'User', required: true },
@@ -13,4 +12,5 @@ const paymentSchema = new Schema({
 
 paymentSchema.index({ user: 1, createdAt: -1 });
 
-module.exports = mongoose.model('Payment', paymentSchema);
+export default mongoose.models.Payment || mongoose.model('Payment', paymentSchema);
+

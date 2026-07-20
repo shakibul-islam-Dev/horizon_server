@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose';
 
 const recommendationSchema = new Schema({
   user: { type: String, ref: 'User', required: true },
@@ -10,4 +9,5 @@ const recommendationSchema = new Schema({
 
 recommendationSchema.index({ user: 1, item: 1 });
 
-module.exports = mongoose.model('Recommendation', recommendationSchema);
+export default mongoose.models.Recommendation || mongoose.model('Recommendation', recommendationSchema);
+

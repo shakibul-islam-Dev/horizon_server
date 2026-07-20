@@ -1,8 +1,9 @@
-const Category = require('../models/Category');
-const Item = require('../models/Item');
-const { sendSuccess, sendError, sendCreated } = require('../helpers/response');
+import { Request, Response } from 'express';
+import Category from '../models/Category';
+import Item from '../models/Item';
+import { sendSuccess, sendError, sendCreated } from '../helpers/response';
 
-exports.getAll = async (req: any, res: any) => {
+export const getAll = async (req: Request, res: Response) => {
   const categories = await Category.find({ isActive: true }).sort({ order: 1, name: 1 }).lean();
 
   const counts = await Item.aggregate([
@@ -16,13 +17,13 @@ exports.getAll = async (req: any, res: any) => {
   sendSuccess(res, 'Categories fetched', data);
 };
 
-exports.getById = async (req: any, res: any, params: any) => {
+export const getById = async (req: Request, res: Response, params: any) => {
   const category = await Category.findById(params.id);
   if (!category) return sendError(res, 404, 'Category not found');
   sendSuccess(res, 'Category fetched', { ...category.toObject(), itemCount: 0 });
 };
 
-exports.create = async (req: any, res: any, params: any, body: any, user: any) => {
+export const create = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user || user.role !== 'admin') return sendError(res, 403, 'Not authorized');
   if (!body || !body.name) return sendError(res, 400, 'Name is required');
   const slug = body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -39,7 +40,7 @@ exports.create = async (req: any, res: any, params: any, body: any, user: any) =
   sendCreated(res, 'Category created', category);
 };
 
-exports.update = async (req: any, res: any, params: any, body: any, user: any) => {
+export const update = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user || user.role !== 'admin') return sendError(res, 403, 'Not authorized');
   const category = await Category.findById(params.id);
   if (!category) return sendError(res, 404, 'Category not found');
@@ -54,7 +55,7 @@ exports.update = async (req: any, res: any, params: any, body: any, user: any) =
   sendSuccess(res, 'Category updated', category);
 };
 
-exports.remove = async (req: any, res: any, params: any, body: any, user: any) => {
+export const remove = async (req: Request, res: Response, params: any, body: any, user: any) => {
   if (!user || user.role !== 'admin') return sendError(res, 403, 'Not authorized');
   const category = await Category.findById(params.id);
   if (!category) return sendError(res, 404, 'Category not found');

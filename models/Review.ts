@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose';
 
 const reviewSchema = new Schema({
   item: { type: Schema.Types.ObjectId, ref: 'Item', required: true },
@@ -26,7 +25,8 @@ reviewSchema.statics.calcAverageRating = async function (itemId: any) {
   }
 };
 
-reviewSchema.post('save', function (this: any) { this.constructor.calcAverageRating(this.item); });
-reviewSchema.post('findOneAndDelete', function (doc: any) { if (doc) doc.constructor.calcAverageRating(doc.item); });
+reviewSchema.post('save', function (this: any) { (this.constructor as any).calcAverageRating(this.item); });
+reviewSchema.post('findOneAndDelete', function (doc: any) { if (doc) (doc.constructor as any).calcAverageRating(doc.item); });
 
-module.exports = mongoose.model('Review', reviewSchema);
+export default mongoose.models.Review || mongoose.model('Review', reviewSchema);
+

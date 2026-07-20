@@ -1,9 +1,9 @@
-const { Router } = require('express');
-const controller = require('../controllers/paymentController');
+import { Router, Request, Response, NextFunction } from 'express';
+import * as controller from '../controllers/paymentController';
 
-function wrap(fn: any) {
-  return (req: any, res: any, next: any) => {
-    Promise.resolve(fn(req, res, req.params, req.body, req.currentUser)).catch(next);
+function wrap(fn: (req: Request, res: Response, params: any, body: any, user: any) => Promise<any> | any) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, req.params, req.body, (req as any).currentUser)).catch(next);
   };
 }
 
@@ -24,4 +24,5 @@ router.get('/transactions/:id', wrap(controller.getTransactionById));
 router.post('/transactions', wrap(controller.createTransaction));
 router.patch('/transactions/:id/status', wrap(controller.updateTransactionStatus));
 
-module.exports = router;
+export default router;
+
