@@ -124,4 +124,4 @@ process.on("unhandledRejection", (err) => console.error("Unhandled Rejection:", 
 process.on("uncaughtException", (err) => console.error("Uncaught Exception:", err));
 
 // Export the app for serverless platforms (Vercel / @vercel/node)
-module.exports = app;
+export default app;
