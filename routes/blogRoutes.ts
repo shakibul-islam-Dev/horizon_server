@@ -1,8 +1,8 @@
 const { Router } = require('express');
 const controller = require('../controllers/blogController');
 
-function wrap(fn) {
-  return (req, res, next) => {
+function wrap(fn: any) {
+  return (req: any, res: any, next: any) => {
     Promise.resolve(fn(req, res, req.params, req.body, req.currentUser)).catch(next);
   };
 }

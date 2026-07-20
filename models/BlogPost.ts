@@ -11,10 +11,10 @@ const blogPostSchema = new Schema({
   tags: [{ type: String, trim: true, lowercase: true }],
   images: [{ type: String }],
   status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
-  meta: { views: { type: Number, default: 0 }, likes: { type: Number, default: 0 } },
+  meta: { views: { type: Number, default: 0 }, likes: { type: Number, default: 0 }, likedBy: [{ type: String }] },
 }, { timestamps: true });
 
-blogPostSchema.pre('save', function () {
+blogPostSchema.pre('save', function (this: any) {
   if (!this.slug) {
     this.slug = this.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   }

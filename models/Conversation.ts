@@ -11,7 +11,7 @@ const messageSchema = new Schema({
 const conversationSchema = new Schema({
   user: { type: String, ref: 'User', required: true },
   title: { type: String, default: 'New Chat' },
-  aiModel: { type: String, default: 'ai' },
+  model: { type: String, default: 'ai' },
   status: { type: String, enum: ['active', 'archived'], default: 'active' },
   lastMessage: { type: String, default: '' },
   messageCount: { type: Number, default: 0 },

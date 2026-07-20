@@ -21,21 +21,21 @@ app.use(cors({
   exposedHeaders: ['Set-Cookie', 'X-Total-Count'],
 }));
 
-app.use(express.json({ limit: '10mb', verify: (req, _res, buf) => { req.rawBody = buf.toString(); } }));
+app.use(express.json({ limit: '10mb', verify: (req: any, _res: any, buf: any) => { req.rawBody = buf.toString(); } }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-app.use(async (req, res, next) => {
+app.use(async (req: any, res: any, next: any) => {
   req.currentUser = await getSession(req);
   next();
 });
 
 app.use('/api', routes);
 
-app.use((req, res) => {
+app.use((req: any, res: any) => {
   res.status(404).json({ success: false, message: `Route ${req.method} ${req.originalUrl} not found` });
 });
 
-app.use((err, req, res, _next) => {
+app.use((err: any, req: any, res: any, _next: any) => {
   console.error('Unhandled error:', err);
   res.status(500).json({
     success: false,
@@ -54,7 +54,7 @@ async function start() {
       console.log(`Health Check: http://localhost:${PORT}/api/health`);
     });
 
-    const shutdown = async (signal) => {
+    const shutdown = async (signal: any) => {
       console.log(`\n${signal} received. Shutting down...`);
       await mongoose.connection.close();
       console.log('MongoDB connection closed');

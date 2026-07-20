@@ -1,8 +1,11 @@
 const { Router } = require('express');
+const multer = require('multer');
 const controller = require('../controllers/aiController');
 
-function wrap(fn) {
-  return (req, res, next) => {
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+function wrap(fn: any) {
+  return (req: any, res: any, next: any) => {
     Promise.resolve(fn(req, res, req.params, req.body, req.currentUser)).catch(next);
   };
 }
@@ -15,9 +18,8 @@ router.post('/ai/classify', wrap(controller.classify));
 
 router.post('/ai/recommendations', wrap(controller.getRecommendations));
 router.post('/ai/track-interaction', wrap(controller.trackInteraction));
-router.post('/ai/recommend', wrap(controller.recommend));
 
-router.post('/ai/analyze', wrap(controller.analyzeData));
+router.post('/ai/analyze', upload.none(), wrap(controller.analyzeData));
 router.get('/ai/analyses', wrap(controller.getAnalyses));
 router.get('/ai/analyses/summary', wrap(controller.getAnalysisSummary));
 router.get('/ai/analyses/:id', wrap(controller.getAnalysisById));

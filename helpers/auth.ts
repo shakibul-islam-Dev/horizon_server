@@ -1,6 +1,6 @@
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-async function getSession(req) {
+async function getSession(req: any) {
   const cookie = req.headers['cookie'];
   if (!cookie) return null;
   try {
